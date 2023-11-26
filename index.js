@@ -97,22 +97,50 @@ async function run() {
       )
       res.send(result)
     })
+    // get user role
+    app.get('/users/:email',async(req,res)=>{
+        const email =req.params.email
+        const result = await usersCollection.findOne({email})
+        res.send(result)
+    })
+    // get all user
+    app.get('/users',verifyToken,async(req,res) =>{
+        const result =await usersCollection.find().toArray()
+        res.send(result)
+    })
+
+
 
     // get all donation req 
     app.get('/donationReq' , async(req,res) =>{
         const result = await donationReqCollection.find().toArray()
         res.send(result)
     })
-    // get single donation req 
-    app.get('/donationReq/:id' , async(req,res) =>{
-        const id = req.params.id
-        const result = await donationReqCollection.findOne({_id :new ObjectId(id)})
+        // get single donation req 
+        app.get('/donationReq/:id' , async(req,res) =>{
+            const id = req.params.id
+            const result = await donationReqCollection.findOne({_id :new ObjectId(id)})
+    
+            res.send(result)
+        })
 
+    // get all donation req for donor
+    app.get('/donationReq/:requesterEmail',async (req,res)=>{
+        const requesterEmail = req.params.requesterEmail
+        const result = await donationReqCollection.find({requesterEmail:requesterEmail}).toArray()
+        res.send(result)
+    })
+
+
+    // save data base donation request
+    app.post('/donationReq',verifyToken,async(req,res) =>{
+        const donationReq = req.body;
+        const result = await donationReqCollection.insertOne(donationReq);
         res.send(result)
     })
 
     // Send a ping to confirm a successful connection
-    await client.db('admin').command({ ping: 1 })
+    // await client.db('admin').command({ ping: 1 })
     console.log(
       'Pinged your deployment. You successfully connected to MongoDB!'
     )
