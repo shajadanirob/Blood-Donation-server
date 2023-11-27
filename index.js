@@ -47,6 +47,11 @@ async function run() {
   try {
     const usersCollection = client.db('bloodDonation').collection('users')
     const donationReqCollection = client.db('bloodDonation').collection('donationReq')
+    const donetsCollection = client.db('bloodDonation').collection('donets')
+
+
+
+
     // auth related api
     app.post('/jwt', async (req, res) => {
       const user = req.body
@@ -80,7 +85,7 @@ async function run() {
     })
 
     // Save or modify user email, status in DB
-    app.put('/users/:email', async (req, res) => {
+    app.patch('/users/:email', async (req, res) => {
       const email = req.params.email
       const user = req.body
       const query = { email: email }
@@ -108,7 +113,52 @@ async function run() {
         const result =await usersCollection.find().toArray()
         res.send(result)
     })
+    // update user role
+    app.put('/users/update/:email', async(req,res)=>{
+        const email =req.params.email;
+        const user = req.body;
+        const query = {email:email}
+        const option ={upsert:true}
+        const updateDoc = {
+            $set:{
+                ...user
+            }
+        }
+        const result = await usersCollection.updateOne(query,updateDoc,option)
+        res.send(result)
+    })
 
+    
+    // // get user role
+    // app.get('/user/:email',async(req,res)=>{
+    //     const email =req.params.email
+    //     const result = await usersCollection.findOne({email})
+    //     res.send(result)
+    // })
+    // // update user status
+    // app.put("/user/:email", async (req, res) => {
+    //     const id = req.params.email;
+    //     const data = req.body;
+    //     console.log("id", id, data);
+    //     const filter = { email: email};
+    //     const options = { upsert: true };
+    //     const updateStatus = req.body;
+    //     const product = {
+    //       $set: {
+    //         status: updateStatus.status,
+    
+    //       },
+    //     };
+  
+    //     const result = await usersCollection.updateOne(
+    //       filter,
+    //       product,
+    //       options
+    //     );
+    //     res.send(result);
+    //   });
+  
+    
 
 
     // get all donation req 
@@ -116,13 +166,7 @@ async function run() {
         const result = await donationReqCollection.find().toArray()
         res.send(result)
     })
-        // get single donation req 
-        app.get('/donationReq/:id' , async(req,res) =>{
-            const id = req.params.id
-            const result = await donationReqCollection.findOne({_id :new ObjectId(id)})
-    
-            res.send(result)
-        })
+       
 
     // get all donation req for donor
     app.get('/donationReq/:requesterEmail',async (req,res)=>{
@@ -131,13 +175,45 @@ async function run() {
         res.send(result)
     })
 
+ // get single donation req 
+ app.get('/donationReqe/:id' , async(req,res) =>{
+    const id = req.params.id
+    const result = await donationReqCollection.findOne({_id :new ObjectId(id)})
 
+    res.send(result)
+})
     // save data base donation request
     app.post('/donationReq',verifyToken,async(req,res) =>{
         const donationReq = req.body;
         const result = await donationReqCollection.insertOne(donationReq);
         res.send(result)
     })
+
+
+// donet gate erquester email
+app.get('/donets/:requesterEmail',async (req,res)=>{
+    const requesterEmail = req.params.requesterEmail
+    const result = await donetsCollection.find({requesterEmail:requesterEmail}).toArray()
+    res.send(result)
+})
+//   get donet booking
+app.get('/donets', async(req,res) =>{
+    const result = await donetsCollection.find().toArray()
+    res.send(result)
+})
+
+
+
+// donet booking
+app.post('/donets', async (req, res) => {
+    const donets = req.body;
+    console.log(donets);
+    const result = await donetsCollection.insertOne(donets);
+    res.send(result);
+  });
+
+
+
 
     // Send a ping to confirm a successful connection
     // await client.db('admin').command({ ping: 1 })
