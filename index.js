@@ -48,6 +48,7 @@ async function run() {
     const usersCollection = client.db('bloodDonation').collection('users')
     const donationReqCollection = client.db('bloodDonation').collection('donationReq')
     const donetsCollection = client.db('bloodDonation').collection('donets')
+    const blogsCollection = client.db('bloodDonation').collection('blogs')
 
 
 
@@ -162,11 +163,32 @@ async function run() {
 
 
     // get all donation req 
+    
+    
+      // save data base donation request
+      app.post('/donationReq',verifyToken,async(req,res) =>{
+        const donationReq = req.body;
+        const result = await donationReqCollection.insertOne(donationReq);
+        res.send(result)
+    })
+    
+    
+    
     app.get('/donationReq' , async(req,res) =>{
         const result = await donationReqCollection.find().toArray()
         res.send(result)
     })
-       
+
+
+    // get single donation req 
+ app.get('/donationReqe/:id' , async(req,res) =>{
+    const id = req.params.id
+    const result = await donationReqCollection.findOne({_id :new ObjectId(id)})
+
+    res.send(result)
+})
+
+
 
     // get all donation req for donor
     app.get('/donationReq/:requesterEmail',async (req,res)=>{
@@ -175,24 +197,19 @@ async function run() {
         res.send(result)
     })
 
- // get single donation req 
- app.get('/donationReqe/:id' , async(req,res) =>{
-    const id = req.params.id
-    const result = await donationReqCollection.findOne({_id :new ObjectId(id)})
+ 
+  
 
-    res.send(result)
-})
-    // save data base donation request
-    app.post('/donationReq',verifyToken,async(req,res) =>{
-        const donationReq = req.body;
-        const result = await donationReqCollection.insertOne(donationReq);
-        res.send(result)
-    })
+
+
+
+
 
 
 // donet gate erquester email
 app.get('/donets/:requesterEmail',async (req,res)=>{
     const requesterEmail = req.params.requesterEmail
+    console.log(requesterEmail)
     const result = await donetsCollection.find({requesterEmail:requesterEmail}).toArray()
     res.send(result)
 })
@@ -201,6 +218,103 @@ app.get('/donets', async(req,res) =>{
     const result = await donetsCollection.find().toArray()
     res.send(result)
 })
+// app.get('/donets/:requesterEmail', async (req, res) => {
+//     try {
+//         const requesterEmail = req.params.requesterEmail;
+        
+//         // Log the requesterEmail for debugging
+//         console.log('Requester Email:', requesterEmail);
+
+//         // Assuming donetsCollection is properly initialized
+//         const result = await donetsCollection.find({ requesterEmail: requesterEmail }).toArray();
+
+//         // Log the result for debugging
+//         console.log('Result:', result);
+
+//         res.send(result);
+//     } catch (error) {
+//         console.error('Error:', error);
+//         res.status(500).send('Internal Server Error');
+//     }
+// });
+
+
+
+
+// donet get updated
+app.get("/donets/updated/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = {
+      _id: new ObjectId(id),
+    };
+    const result = await donetsCollection.findOne(query);
+    console.log(result);
+    res.send(result);
+  });
+
+//   put donet
+  app.put("/donets/updated/:id", async (req, res) => {
+    const id = req.params.id;
+    const data = req.body;
+    console.log("id", id, data);
+    const filter = { _id: new ObjectId(id) };
+    const options = { upsert: true };
+    const Updateddonets = req.body;
+    const product = {
+      $set: {
+        requsterName: Updateddonets.requsterName,
+        requesterEmail: Updateddonets.requesterEmail,
+        date: Updateddonets.date,
+        recipientName: Updateddonets.recipientName,
+        recipientLocation: Updateddonets.recipientLocation,
+        donationTime: Updateddonets.donationTime,
+        status: Updateddonets.status,
+      },
+    };
+
+    const result = await donetsCollection.updateOne(
+      filter,
+      product,
+      options
+    );
+    res.send(result);
+  });
+
+//   get donetStatus
+app.get("/donets/status/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = {
+      _id: new ObjectId(id),
+    };
+    const result = await donetsCollection.findOne(query);
+    console.log(result);
+    res.send(result);
+  });
+
+// put updated status
+//   put donet
+app.put("/donets/status/:id", async (req, res) => {
+    const id = req.params.id;
+    const data = req.body;
+    console.log("id", id, data);
+    const filter = { _id: new ObjectId(id) };
+    const options = { upsert: true };
+    const status = req.body;
+    const product = {
+      $set: {
+        status
+        
+      },
+    };
+
+    const result = await donetsCollection.updateOne(
+      filter,
+      product,
+      options
+    );
+    res.send(result);
+  });
+
 
 
 
@@ -211,6 +325,114 @@ app.post('/donets', async (req, res) => {
     const result = await donetsCollection.insertOne(donets);
     res.send(result);
   });
+
+
+
+//   add a blogs
+ // post services 
+ app.post("/blogs", async (req, res) => {
+    const blogs = req.body;
+    console.log(blogs);
+    const result = await blogsCollection.insertOne(blogs);
+    console.log(result);
+    res.send(result);
+  });
+
+// services get
+app.get('/blogs', async (req, res) => {
+    const cursor = blogsCollection.find();
+    const result = await cursor.toArray()
+    res.send(result)
+  })
+// single service get
+app.get("/blogs/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = {
+      _id: new ObjectId(id),
+    };
+    const result = await blogsCollection.findOne(query);
+    console.log(result);
+    res.send(result);
+  });
+
+// single service get
+app.get("/blogs/updated/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = {
+      _id: new ObjectId(id),
+    };
+    const result = await blogsCollection.findOne(query);
+    console.log(result);
+    res.send(result);
+  });
+
+  app.put("/blogs/updated/:id", async (req, res) => {
+    const id = req.params.id;
+    const data = req.body;
+    console.log("id", id, data);
+    const filter = { _id: new ObjectId(id) };
+    const options = { upsert: true };
+    const UpdatedBlogs = req.body;
+    const Blog = {
+      $set: {
+        blogsName: UpdatedBlogs.blogsName,
+        description: UpdatedBlogs.description,
+        
+      },
+    };
+
+    const result = await blogsCollection.updateOne(
+      filter,
+      Blog,
+      options
+    );
+    res.send(result);
+  });
+
+ // get delete service
+ app.get("/blogs/delete/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = {
+      _id: new ObjectId(id),
+    };
+    const result = await blogsCollection.findOne(query);
+    console.log(result);
+    res.send(result);
+  });
+
+
+
+    // services delete
+    app.delete('/blogs/delete/:id', async (req, res) => {
+        const id = req.params.id;
+        console.log('please delete', id)
+        const query = { _id: new ObjectId(id) };
+        const result = await blogsCollection.deleteOne(query);
+        res.send(result)
+      })
+
+//   app.put("/blogs/updated/:id", async (req, res) => {
+//     const id = req.params.id;
+//     const data = req.body;
+//     console.log("id", id, data);
+//     const filter = { _id: new ObjectId(id) };
+//     const options = { upsert: true };
+//     const UpdatedBlogs = req.body;
+//     const product = {
+//       $set: {
+//         blogsName: UpdatedBlogs.blogsName,
+//         userEmail: UpdatedBlogs.description,
+       
+//       },
+//     };
+
+//     const result = await servicesCollection.updateOne(
+//       filter,
+//       product,
+//       options
+//     );
+//     res.send(result);
+//   });
 
 
 
