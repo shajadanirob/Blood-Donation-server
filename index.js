@@ -197,12 +197,57 @@ async function run() {
         res.send(result)
     })
 
+
+
+    // get updated donation req
+    // single service get
+app.get("/donationReqe/updated/:id", async (req, res) => {
+    const id = req.params.id;
+    const query = {
+      _id: new ObjectId(id),
+    };
+    const result = await donationReqCollection.findOne(query);
+    console.log(result);
+    res.send(result);
+  });
  
-  
+//   updated donationreq 
+app.put("/donationReqe/updated/:id", async (req, res) => {
+    const id = req.params.id;
+    const data = req.body;
+    console.log("id", id, data);
+    const filter = { _id: new ObjectId(id) };
+    const options = { upsert: true };
+    const UpdatedDonation = req.body;
+    const donation = {
+      $set: {
+        requesterName: UpdatedDonation.requesterName,
+        requesterEmail: UpdatedDonation.requesterEmail,
+        date: UpdatedDonation.date,
+        recipientName: UpdatedDonation.recipientName,
+        recipientLocation: UpdatedDonation.recipientLocation,
+        donationTime: UpdatedDonation.donationTime,
+        
+      },
+    };
+
+    const result = await donationReqCollection.updateOne(
+      filter,
+      donation,
+      options
+    );
+    res.send(result);
+  });
 
 
-
-
+   // services delete
+   app.delete('/donationReqe/updated/:id', async (req, res) => {
+    const id = req.params.id;
+    console.log('please delete', id)
+    const query = { _id: new ObjectId(id) };
+    const result = await donationReqCollection.deleteOne(query);
+    res.send(result)
+  })
 
 
 
