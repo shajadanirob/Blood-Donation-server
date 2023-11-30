@@ -3,6 +3,7 @@ const app = express()
 require('dotenv').config()
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
+const stripe = require('stripe')('sk_test_51OECK7HxUHd38VBIMVfgVAHXGT72XPJwqexr5Wq0QgSoiojGqdRv9Mjln715aJimdRjI4GgjJjHcaasea5Cg6AXT00gitjiUxl')
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const jwt = require('jsonwebtoken')
 const morgan = require('morgan')
@@ -481,6 +482,42 @@ app.get("/blogs/updated/:id", async (req, res) => {
 
 
 
+
+
+
+// stripe
+
+app.post('/payment', async (req, res) => {
+    try {
+      const { token } = req.body;
+  
+      const charge = await stripe.charges.create({
+        source: token.id,
+        amount: 1000, // Amount in cents
+        currency: 'usd',
+        description: 'Donation to the organization',
+      });
+  
+      res.status(200).json({ success: true });
+    } catch (error) {
+      console.error('Error processing payment:', error);
+      res.status(500).json({ error: 'Payment failed' });
+    }
+  });
+  
+
+  app.get('/funding-history', async (req, res) => {
+    try {
+      // Fetch funding history from your database
+      // Example: const fundingHistory = await db.collection('funding').find().toArray();
+      const fundingHistory = []; // Replace with actual data fetching logic
+  
+      res.status(200).json(fundingHistory);
+    } catch (error) {
+      console.error('Error fetching funding history:', error);
+      res.status(500).json({ error: 'Error fetching funding history' });
+    }
+  });
 
     // Send a ping to confirm a successful connection
     // await client.db('admin').command({ ping: 1 })
