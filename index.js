@@ -2,20 +2,31 @@ const express = require('express')
 const app = express()
 require('dotenv').config()
 const cors = require('cors')
-const cookieParser = require('cookie-parser')
-const stripe = require('stripe')('sk_test_51OECK7HxUHd38VBIMVfgVAHXGT72XPJwqexr5Wq0QgSoiojGqdRv9Mjln715aJimdRjI4GgjJjHcaasea5Cg6AXT00gitjiUxl')
-const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
 const jwt = require('jsonwebtoken')
+const stripe = require('stripe')('sk_test_51OECK7HxUHd38VBIMVfgVAHXGT72XPJwqexr5Wq0QgSoiojGqdRv9Mjln715aJimdRjI4GgjJjHcaasea5Cg6AXT00gitjiUxl')
+const cookieParser = require('cookie-parser')
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb')
+
 const morgan = require('morgan')
 const port = process.env.PORT || 5000
 
 // middleware
-const corsOptions = {
-  origin: ['http://localhost:5173', 'http://localhost:5174'],
-  credentials: true,
-  optionSuccessStatus: 200,
-}
-app.use(cors(corsOptions))
+// const corsOptions = {
+//   origin: ['http://localhost:5173', 'http://localhost:5174',
+//      'https://blood-donation-bc1c5.web.app/' ,'https://blood-donation-bc1c5.firebaseapp.com/'
+// ],
+//   credentials: true,
+//   optionSuccessStatus: 200,
+// }
+app.use(cors({
+    origin: [
+      'http://localhost:5173',
+      'https://blood-donation-bc1c5.web.app',
+      'https://blood-donation-bc1c5.firebaseapp.com'
+  
+    ],
+    credentials: true
+  }))
 app.use(express.json())
 app.use(cookieParser())
 app.use(morgan('dev'))
@@ -50,6 +61,7 @@ async function run() {
     const donationReqCollection = client.db('bloodDonation').collection('donationReq')
     const donetsCollection = client.db('bloodDonation').collection('donets')
     const blogsCollection = client.db('bloodDonation').collection('blogs')
+    const campaignsCollection = client.db('bloodDonation').collection('campaigns')
 
 
 
@@ -481,9 +493,31 @@ app.get("/blogs/updated/:id", async (req, res) => {
 //   });
 
 
+// campaging
+app.post("/campaigns", async (req, res) => {
+  const campaigns = req.body;
+  console.log(campaigns);
+  const result = await campaignsCollection.insertOne(campaigns);
+  console.log(result);
+  res.send(result);
+});
 
-
-
+// get cmpaging
+app.get('/campaigns', async (req, res) => {
+  const cursor = campaignsCollection.find();
+  const result = await cursor.toArray()
+  res.send(result)
+})
+// get single
+app.get("/campaigns/:id", async (req, res) => {
+  const id = req.params.id;
+  const query = {
+    _id: new ObjectId(id),
+  };
+  const result = await campaignsCollection.findOne(query);
+  console.log(result);
+  res.send(result);
+});
 
 // stripe
 
